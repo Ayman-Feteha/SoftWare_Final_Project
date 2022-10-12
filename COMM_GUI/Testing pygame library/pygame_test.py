@@ -2,7 +2,7 @@
 import pygame
  
 # importing sys module
-import sys
+import
  
 # initialising pygame
 pygame.init()

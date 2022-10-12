@@ -2,19 +2,12 @@ import pygame
 from motion import *
 import sys
 import math
-buffer = [0]*5
+buffer = [0,0,0,0,0]
 check = True
 pygame.init()
 speed_count=0
 speed=100
 
-# Set the width and height of the screen [width,height]
-
-#size = [500, 700]
-#screen = pygame.display.set_mode(size)
-#pygame.display.set_caption("ROV")
-
-# Loop until the user clicks the close button.
 done = False
 
 # Initialize the joysticks
@@ -45,12 +38,12 @@ while not done:
         try:
             joystick = pygame.joystick.Joystick(0)
             joystick.init()
-            axis_RX = round(joystick.get_axis(2),3)
-            axis_RY = round(joystick.get_axis(5),3)
+            axis_RX = round(joystick.get_axis(3),3)
+            axis_RY = round(joystick.get_axis(4),3)
             axis_LX = round(joystick.get_axis(0),3)
             axis_LY = round(joystick.get_axis(1),3)
 
-            axis_UP = round(((joystick.get_axis(3)+1)/-2) + ((joystick.get_axis(4)+1)/2),3)
+            axis_Forward = round(((joystick.get_axis(5)+1)/-2) + ((joystick.get_axis(2)+1)/2),3)
             btn_light = joystick.get_button(4)
             btn_speed = joystick.get_button(5)
 
@@ -64,23 +57,24 @@ while not done:
                 speed+=50
                 if speed>200:
                     speed=100
-            ls=[axis_UP,axis_RX,axis_LX,axis_RY,axis_LY]
+            ls=[axis_Forward,axis_RX,axis_LX,-axis_RY,-axis_LY]
 
             
                 
-            for i in range(4): 
-                    if abs(ls[i])<=0.05 :
-                        ls[i]=0
+            for i in range(5): 
+                if abs(ls[i])<0.051 :
+                    ls[i]=0
             if ls != buffer:
                 #print(ls)
-                for i in range(4): 
+                for i in range(5): 
                     buffer[i] = ls[i]
+                #print(buffer)
                 ROV=motion()
                 msg = ROV.motorSpeed(ls,speed)
                 #print (msg)    
-                #ROV.decoder()           
-        except ZeroDivisionError:
-            print("Joy stick not connent")
+                ROV.decoder()           
+        except pygame.error:
+            print("Joystick is not connected")
             
 
 
