@@ -34,7 +34,6 @@ class motion():
 
 
         self.output = self.encoder()
-        self.decoder()
         return self.output
     def encoder(self):
         for i in range(len(self.speeds)):
@@ -43,7 +42,6 @@ class motion():
             self.speeds[i] = chr(self.speeds[i])
 
         self.spd = ''.join(self.speeds)
-        print(self.spd)
         return self.spd
 
     def decoder(self):
