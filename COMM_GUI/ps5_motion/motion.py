@@ -7,7 +7,7 @@
 
 class motion():
 
-    def motorSpeed(self, axis, max_speed):
+    def motorSpeed(self, axis, max_speed,buttons):
 
 
         self.forward = axis[0]
@@ -32,10 +32,11 @@ class motion():
             for i in range(len(self.speeds)):
                 self.speeds[i]=round(self.speeds[i]*scale)
 
-
+        self.speeds.append(buttons)
         self.output = self.encoder()
         return self.output
     def encoder(self):
+        
         for i in range(len(self.speeds)):
             self.speeds[i] = round(self.speeds[i] + 200)
             self.speeds[i] = round(self.speeds[i] / 2)

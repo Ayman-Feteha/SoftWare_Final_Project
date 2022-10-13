@@ -1,17 +1,43 @@
 import pygame
 from motion import *
 import sys
+import rospy
+from sys import getsizeof
 import math
 buffer = [0,0,0,0,0]
-check = True
 pygame.init()
-speed_count=0
 speed=100
 
 done = False
 
 # Initialize the joysticks
 pygame.joystick.init()
+
+class Publisher():
+    def __init__(self):
+        self.name="station"
+        rospy.init_node(self.name)
+        self.pub=rospy.Publisher("/toROV",String,queue_size=10)
+
+    def send(self,msg):
+        self.pub.publish(msg)
+        rospy.Rate(1)
+
+station = Publisher()
+
+pygame.init()
+done=False
+clock=pygame.time.Clock()
+pygame.joystick.init()
+
+while not done:
+    for event in pygame.event.get():
+        if event.type==pygame.QUIT:
+            done==True
+        if event.type == pygame.JOYBUTTONDOWN:
+            print("Joystick button pressed.")
+        if event.type == pygame.JOYBUTTONUP:
+            print("Joystick button released.")
 
 def bin_dec(button_ls):
     temp=1
@@ -70,9 +96,9 @@ while not done:
                     buffer[i] = ls[i]
                 #print(buffer)
                 ROV=motion()
-                msg = ROV.motorSpeed(ls,speed)
-                #print (msg)    
-                ROV.decoder()           
+                msg = ROV.motorSpeed(ls,speed,buttons_dec)
+                print (getsizeof(msg)+","+msg)    
+                #ROV.decoder()           
         except pygame.error:
             print("Joystick is not connected")
             
