@@ -1,3 +1,5 @@
+#! /usr/bin/python3
+
 # This is a sample Python script.
 
 # Press Shift+F10 to execute it or replace it with your code.
@@ -32,8 +34,9 @@ class motion():
             for i in range(len(self.speeds)):
                 self.speeds[i]=round(self.speeds[i]*scale)
 
-        self.speeds.append(buttons)
         self.output = self.encoder()
+        self.output="#" + self.output + buttons + "#"
+
         return self.output
     def encoder(self):
         
@@ -41,12 +44,16 @@ class motion():
             self.speeds[i] = round(self.speeds[i] + 200)
             self.speeds[i] = round(self.speeds[i] / 2)
             self.speeds[i] = chr(self.speeds[i])
-
+        
+    
         self.spd = ''.join(self.speeds)
+        
         return self.spd
 
     def decoder(self):
         self.speeds=list(self.spd)
+        #Check if the squence is sent correct 
+        #if(len(self.speeds) == '' )
         for i in range(len(self.speeds)):
             self.speeds[i] = ord(self.speeds[i])
             self.speeds[i] = round(self.speeds[i] * 2)

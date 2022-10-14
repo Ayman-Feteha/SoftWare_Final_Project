@@ -1,17 +1,22 @@
+#! /usr/bin/python3
+from os import stat
 import pygame
 from motion import *
 import sys
 import rospy
+from std_msgs.msg import String
 from sys import getsizeof
 import math
 buffer = [0,0,0,0,0]
+buttons_last = "d"
+
 pygame.init()
 speed=100
 
 done = False
+check=True
 
 # Initialize the joysticks
-pygame.joystick.init()
 
 class Publisher():
     def __init__(self):
@@ -21,23 +26,14 @@ class Publisher():
 
     def send(self,msg):
         self.pub.publish(msg)
-        rospy.Rate(1)
+        rospy.loginfo(msg)
+        #rospy.Rate(2)
 
 station = Publisher()
 
 pygame.init()
-done=False
 clock=pygame.time.Clock()
 pygame.joystick.init()
-
-while not done:
-    for event in pygame.event.get():
-        if event.type==pygame.QUIT:
-            done==True
-        if event.type == pygame.JOYBUTTONDOWN:
-            print("Joystick button pressed.")
-        if event.type == pygame.JOYBUTTONUP:
-            print("Joystick button released.")
 
 def bin_dec(button_ls):
     temp=1
@@ -46,10 +42,28 @@ def bin_dec(button_ls):
         dec=dec+i*temp
         temp*=2
         #print (dec)
-    return dec
+    return str(dec)
+
+def states(ls,speed = 0,buttons_dec ="d"):
+    ROV=motion()
+    global buttons_last
+    for i in range(5): 
+        if abs(ls[i])<0.051 :
+            ls[i]=0
+    if (ls != buffer) or (buttons_dec != buttons_last) :
+        #print(ls)
+        for i in range(5): 
+            buffer[i] = ls[i]
+        buttons_last = buttons_dec
+        #print(buffer)
+        msg = ROV.motorSpeed(ls,speed,buttons_dec)
+        station.send(msg)
+        #print (msg)    
+        #ROV.decoder()
+
 
 # -------- Main Program Loop -----------
-while not done:
+while (not done)  and (not rospy.is_shutdown()):
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             done = True
@@ -62,6 +76,7 @@ while not done:
             print("Joystick button released.")
         #_____________________________________________#
         try:
+            check=True
             joystick = pygame.joystick.Joystick(0)
             joystick.init()
             axis_RX = round(joystick.get_axis(3),3)
@@ -84,23 +99,16 @@ while not done:
                 if speed>200:
                     speed=100
             ls=[axis_Forward,axis_RX,axis_LX,-axis_RY,-axis_LY]
-
-            
-                
-            for i in range(5): 
-                if abs(ls[i])<0.051 :
-                    ls[i]=0
-            if ls != buffer:
-                #print(ls)
-                for i in range(5): 
-                    buffer[i] = ls[i]
-                #print(buffer)
-                ROV=motion()
-                msg = ROV.motorSpeed(ls,speed,buttons_dec)
-                print (getsizeof(msg)+","+msg)    
-                #ROV.decoder()           
+            states(ls,speed,buttons_dec)
+                     
         except pygame.error:
             print("Joystick is not connected")
+            z = [0,0,0,0,0]
+            states(z)
+            
+            
+
+            
             
 
 
