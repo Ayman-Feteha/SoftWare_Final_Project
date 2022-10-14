@@ -1,0 +1,8 @@
+prefix=/home/rewan/Downloads/SoftWare_Final_Project/COMM_GUI/com_ws/install
+
+Name: pack
+Description: Description of pack
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
