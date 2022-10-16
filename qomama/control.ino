@@ -1,4 +1,3 @@
-#include "MPU9250.h"
 
 MPU9250 mpu;
 #include <Servo.h>
