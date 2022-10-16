@@ -1,3 +1,5 @@
+#include <Servo.h>
+Servo my_servo;
 //
 // MPU-9250 Mahony AHRS  S.J. Remington 3/2020
 // last update 12/17/2020
@@ -96,6 +98,10 @@ void setup() {
   accelgyro.initialize();
   // verify connection
   Serial.println(accelgyro.testConnection() ? "MPU9250 OK" : "MPU9250 ??");
+  
+    my_servo.write(90);
+    delay(1000);
+   
 }
 
 // AHRS loop
@@ -133,9 +139,9 @@ void loop()
   // http://www.ngdc.noaa.gov/geomag-web/#declination
   //conventional nav, yaw increases CW from North, corrected for local magnetic declination
 
-  yaw = -yaw + 14.5;
-  if(yaw<0) yaw += 360.0;
-  if(yaw>360.0) yaw -= 360.0;
+  yaw = -yaw + 15.5;
+  if(yaw<0) yaw += 180.0;
+  if(yaw>360.0) yaw -= 180.0;
   now_ms = millis(); //time to print?
   if (now_ms - last_ms >= print_ms) {
     last_ms = now_ms;
@@ -146,7 +152,10 @@ void loop()
     Serial.print(pitch, 0);
     Serial.print(", ");
     Serial.println(roll, 0);
+    
   }
+      my_servo.write(90-yaw);
+      delay(5);
 }
 void get_MPU_scaled(void) {
   float temp[3];
