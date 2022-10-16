@@ -84,12 +84,12 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
     nh.spinOnce();
-
+    motion(speedsArr);
     
     //delay(500);
 }
 
-int motion(int speedsArr)
+int motion(int speedsArr[6])
 {
   int tspeed[6];
   for (int i = 0 ; i<6 ; i++)
