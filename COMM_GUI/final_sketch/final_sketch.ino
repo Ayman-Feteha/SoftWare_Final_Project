@@ -22,24 +22,30 @@ Servo TB;
 
 ros::NodeHandle  nh;
 char speeds[10]="";
+char ActualSpeeds[6]="";
+char buttons[]="";
 boolean check=false;
 char hash = '#';
 
 void messageCb(const std_msgs::String& msg){
-  speeds[0]=msg.data[0];
-  speeds[8]=msg.data[8];
-//msg.data.toCharArray(speeds,10);
-//speeds=msg.data;
+strcpy(speeds,"000000000");
+  //speeds[0]=msg.data[0]; 
+  //speeds[8]=msg.data[8];
+int n= strlen((const char*)msg.data);
 
+for (int i=0; i<n; i++)
+{
+  speeds[i]=msg.data[i];
+}
 check_msg();
-/*if(check)
+if(check)
 {
   nh.loginfo("True");
 }
 else
 {
   nh.loginfo("False");
-}*/
+}
 //nh.loginfo(speeds[8]);
 nh.loginfo(msg.data);
 
@@ -52,7 +58,7 @@ ros::Subscriber<std_msgs::String> sub("/toROV", messageCb );
 void check_msg()
 {
   boolean x=(speeds[0]==hash);
-  boolean y=(speeds[8]==hash);
+  boolean y=(speeds[strlen(speeds)-1]==hash);
   if ((x )&&(y))
   {
     check=true;
@@ -67,16 +73,14 @@ void setup() {
   // put your setup code here, to run once:
     nh.initNode();
     nh.subscribe(sub);
-<<<<<<< HEAD
-=======
-      nh.advertise(chatter);
+    
+    
     pinMode(FR_pin, OUTPUT);
     pinMode(FL_pin, OUTPUT);
     pinMode(BR_pin, OUTPUT);
     pinMode(BL_pin, OUTPUT);
     pinMode(TF_pin, OUTPUT);
     pinMode(TB_pin, OUTPUT);
->>>>>>> 7d1971976c83a0124934f2e6d5bcc747672b5a80
 
 
     /* INITIALIZING THRUSTERS */ 
@@ -93,12 +97,12 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
     nh.spinOnce();
-    motion(speedsArr);
+    //motion(speedsArr);
     
     //delay(500);
 }
 
-int motion(int speedsArr[6])
+/*int motion(int speedsArr[6])
 {
   int tspeed[6];
   for (int i = 0 ; i<6 ; i++)
@@ -113,4 +117,4 @@ int motion(int speedsArr[6])
   BR.writeMicroseconds(1500 + tspeed[4]);
   BL.writeMicroseconds(1500 + tspeed[5]);
 
-}
+}*/
