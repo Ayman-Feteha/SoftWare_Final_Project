@@ -22,7 +22,7 @@ Servo TB;
 
 ros::NodeHandle  nh;
 char speeds[10]="";
-char ActualSpeeds[6]="";
+char speedsArr[7]={};
 char buttons[]="";
 boolean check=false;
 char hash = '#';
@@ -41,6 +41,11 @@ check_msg();
 if(check)
 {
   nh.loginfo("True");
+  for (int i=0;i<=6;i++)
+  {
+    speedsArr[i]=atoi((const char*)speeds[i+1]);
+  }
+  motion(speedsArr);
 }
 else
 {
@@ -54,6 +59,10 @@ nh.loginfo(msg.data);
 }
 
 ros::Subscriber<std_msgs::String> sub("/toROV", messageCb );
+void decode()
+{
+  
+}
 
 void check_msg()
 {
@@ -106,7 +115,7 @@ void loop() {
     //delay(500);
 }
 
-<<<<<<< HEAD
+
 /*int motion(int speedsArr[6])
 =======
 /*
@@ -118,8 +127,7 @@ void loop() {
 *third step is to add the speeds of motors to the setpoint so it can be varied from 1300:1700
 */
 
-int motion(int speedsArr[6])
->>>>>>> refs/remotes/origin/main
+int motion(char speedsArr[7])
 {
   //local variable declerations
   int tspeed[6];
@@ -167,4 +175,4 @@ tspeed[i]=tspeed[i]*scaling;
   BR.writeMicroseconds(1500 + tspeed[4]);
   BL.writeMicroseconds(1500 + tspeed[5]);
 
-}*/
+}
