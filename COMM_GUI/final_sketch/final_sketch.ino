@@ -83,13 +83,17 @@ void setup() {
     pinMode(TB_pin, OUTPUT);
 
 
-    /* INITIALIZING THRUSTERS */ 
-    FR.writeMicroseconds(1500);
-    FL.writeMicroseconds(1500);
-    BR.writeMicroseconds(1500);
-    BL.writeMicroseconds(1500);
-    TF.writeMicroseconds(1500);
-    TB.writeMicroseconds(1500);
+    /* INITIALIZING THRUSTERS 
+       Zero position of thrusters is at 1500.
+       if thruster takes more than 1500 it rotates clock wise
+       if thruster takes less than 1500 it rotates anticlock wise
+    */ 
+    FR.writeMicroseconds(1500);   //Front right thruster
+    FL.writeMicroseconds(1500);   //Front left thruster
+    BR.writeMicroseconds(1500);   //Back right thruster
+    BL.writeMicroseconds(1500);   //Back left thruster
+    TF.writeMicroseconds(1500);   //Top front thruster
+    TB.writeMicroseconds(1500);   //Top back thruster
     delay(7000);
 
 }
@@ -102,14 +106,60 @@ void loop() {
     //delay(500);
 }
 
+<<<<<<< HEAD
 /*int motion(int speedsArr[6])
+=======
+/*
+*this function takes the speeds given to thrusters from motion.py and add each speed to its specific thruster so that the speed of each thruster change as the axis of the joystick changes.
+*first step is to assign the values of motor speeds tp tspeed array 
+*second step is to make sure that values are not out of limit (-200,200)
+*if the values are out of range, calculate the scaling factor and multiply the speeds by this factor to get into the range and avoid hardware problems
+*if values are in range skip the loop of scaling
+*third step is to add the speeds of motors to the setpoint so it can be varied from 1300:1700
+*/
+
+int motion(int speedsArr[6])
+>>>>>>> refs/remotes/origin/main
 {
+  //local variable declerations
   int tspeed[6];
+  int max_speed=200, min_speed=-200;    //hardware limitition for the thruster speeds
+  float scaling;
+
+  //the loop that check if values are in limited range or out of range
+  //at the end of the loop scaling factor is calculated
   for (int i = 0 ; i<6 ; i++)
   {
     tspeed[i] = speedsArr[i];
+    if (tspeed[i]>max_speed){
+      max_speed=tspeed[i];
+      }
+    else if (tspeed[i]<min_speed){
+      min_speed=tspeed[i];
+      }
+    if (-min_speed>max_speed){
+      scaling=200/-min_speed;
+      }
+    else if (-min_speed<max_speed){
+      scaling=200/max_speed;
+      }
+    else{scaling=200/max_speed;}
   }
 
+  //restate the max and min speeds to 200 and -200 for limit range boundaries
+  max_speed=200;
+  min_speed=-200;
+
+  //scaling the speeds if they are out of range
+if (scaling!=1)
+{
+for (int i = 0 ; i<6 ; i++)
+{
+tspeed[i]=tspeed[i]*scaling;  
+}
+
+//assign the speeds to the thrusters
+}
   FR.writeMicroseconds(1500 + tspeed[0]);
   FL.writeMicroseconds(1500 + tspeed[1]);
   TF.writeMicroseconds(1500 + tspeed[2]);
