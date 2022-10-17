@@ -3,47 +3,52 @@
 #include <std_msgs/String.h>
 
 ros::NodeHandle  nh;
-std_msgs::String speeds;
-ros::Publisher chatter("chatter", &speeds);
+char speeds[10]="";
+boolean check=false;
+char hash = '#';
 
-void messageCb( const std_msgs::String& msg){
+void messageCb(const std_msgs::String& msg){
+  speeds[0]=msg.data[0];
+  speeds[8]=msg.data[8];
+//msg.data.toCharArray(speeds,10);
+//speeds=msg.data;
 
-char mymessage[9];
-char updated_msg[7];
-for (char i =1 ;i<=8;i++)
+check_msg();
+/*if(check)
 {
-  mymessage[i-1] = msg.data[i];
-  
+  nh.loginfo("True");
 }
-if ((sizeof(mymessage)/sizeof(mymessage[0]))==1)
+else
 {
-  if ((strcmp(mymessage[0],"#"))&&(strcmp(mymessage[8],"#")))
-  {
-    for (char i=0;i<7;i++)
-    {
-      updated_msg[i] = mymessage[i+1]; 
-      
-    }
-    
-//    mymessage.remove(0);
-//    mymessage.remove(8);
-    speeds.data = updated_msg;    
-    
-  }
-  
-}
+  nh.loginfo("False");
+}*/
+//nh.loginfo(speeds[8]);
+nh.loginfo(msg.data);
 
-  nh.loginfo ( speeds.data );
+
+  
 }
 
 ros::Subscriber<std_msgs::String> sub("/toROV", messageCb );
 
+void check_msg()
+{
+  boolean x=(speeds[0]==hash);
+  boolean y=(speeds[8]==hash);
+  if ((x )&&(y))
+  {
+    check=true;
+  }
+  else
+  {
+    check=false;
+  }
+}
 
 void setup() {
   // put your setup code here, to run once:
     nh.initNode();
     nh.subscribe(sub);
-      nh.advertise(chatter);
 
 
 }
