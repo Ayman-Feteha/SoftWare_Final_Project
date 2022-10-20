@@ -27,37 +27,51 @@ class motion():
         self.BL = (self.forward + self.rotate + self.slide) * self.max_speed
 
         self.speeds=[self.FR,self.FL,self.TF,self.TB,self.BR,self.BL]
+        
 
         x=[abs(max(self.speeds)),abs(min(self.speeds))]
         if(max(x)>self.max_speed):
             scale = self.max_speed / max(x)
             for i in range(len(self.speeds)):
-                self.speeds[i]=round(self.speeds[i]*scale)
-
+               self.speeds[i]=round(self.speeds[i]*scale)
+        else:
+            for i in range(len(self.speeds)):
+                self.speeds[i]=round(self.speeds[i])
+        #print(self.speeds)
         self.output = self.encoder()
-        self.output="#" + self.output + buttons + "#"
+        
+        self.output="#" + self.output + str(buttons)+ "#"
+        
 
         return self.output
     def encoder(self):
-        
+        self.Chrspeeds=[]
         for i in range(len(self.speeds)):
-            self.speeds[i] = round(self.speeds[i] + 200)
+            self.speeds[i] = (self.speeds[i] + 200)
             self.speeds[i] = round(self.speeds[i] / 2)
-            self.speeds[i] = chr(self.speeds[i])
+            self.Chrspeeds.append(chr(self.speeds[i]))
         
-    
-        self.spd = ''.join(self.speeds)
+
+        #print(self.Chrspeeds)
+        self.spd = ''.join(self.Chrspeeds)
         
         return self.spd
 
-    def decoder(self):
-        self.speeds=list(self.spd)
+    def decoder(self,msg):
+        self.speeds=[x for x in msg]
         #Check if the squence is sent correct 
         #if(len(self.speeds) == '' )
-        for i in range(len(self.speeds)):
-            self.speeds[i] = ord(self.speeds[i])
-            self.speeds[i] = round(self.speeds[i] * 2)
-            self.speeds[i] = round(self.speeds[i] - 200)
+        if (self.speeds[0]=="#" and self.speeds[8]=="#"):
+            del self.speeds[0]
+            del self.speeds[-1]
+
+            for i in range(len(self.speeds)):
+                if (i==7):
+                    self.speeds[i]=bin(ord(self.speeds[i]))
+                    break
+                self.speeds[i] = int(ord(self.speeds[i]))
+                self.speeds[i] = self.speeds[i] * 2
+                self.speeds[i] = self.speeds[i] - 200
 
 
         print(self.speeds)
