@@ -39,8 +39,8 @@ class App(QMainWindow):
         self.title = 'ROV'
         self.left = 200
         self.top = 200
-        self.width = 1920
-        self.height = 1080
+        self.width = 1600
+        self.height = 900
 
         self.initUI()
     
@@ -207,23 +207,37 @@ class App(QMainWindow):
         self.labellight_state.setGeometry(380,520,120,50)
         self.labellight_state.setFont(QFont("Arial", 40))
         self.labellight_state.setStyleSheet("QLabel {color : rgb(150, 150, 150)}")
-#----------------------GRIPPERS TABLE------------------------
-        self.table = QTableWidget(self)
-        self.table.setColumnCount(2)
-        self.table.setRowCount(4)
-        self.table.setMinimumWidth(200)
-        self.table.setMinimumHeight(200)
-        self.table.setGeometry(10 , 620 , 260, 260)
-        self.table.setStyleSheet("background-color: rgb(255,255,255)")
-        self.table.setItem(0,0,QTableWidgetItem("Gripper1"))
-        #self.table.setItem(0,1,QTableWidgetItem("Gripper1"))
-        self.table.setItem(1,0,QTableWidgetItem("Gripper2"))
-        #self.table.setItem(0,0,QTableWidgetItem("Gripper2"))
-        self.table.setItem(2,0,QTableWidgetItem("Gripper3"))
-        #self.table.setItem(0,0,QTableWidgetItem("Gripper3"))
-        self.table.setItem(3,0,QTableWidgetItem("Gripper4"))
-        #self.table.setItem(0,0,QTableWidgetItem("Gripper4"))
-        
+#----------------------GRIPPERS------------------------
+       
+#--------------------display Gripper_1-----------------------
+        self.labelgripper1 = QLabel(self)
+        self.labelgripper1.setText("Gripper[1]")
+        self.labelgripper1.setGeometry(30,650,190,50)
+        self.labelgripper1.setFont(QFont("Arial", 25))
+        self.labelgripper1.setStyleSheet("QLabel {color : rgb(150, 150, 150)}")
+
+#--------------------display Gripper_2-----------------------
+        self.labelgripper2 = QLabel(self)
+        self.labelgripper2.setText("Gripper[2]")
+        self.labelgripper2.setGeometry(30,700,190,50)
+        self.labelgripper2.setFont(QFont("Arial", 25))
+        self.labelgripper2.setStyleSheet("QLabel {color : rgb(150, 150, 150)}")
+
+#--------------------display Gripper_3-----------------------
+        self.labelgripper3 = QLabel(self)
+        self.labelgripper3.setText("Gripper[3]")
+        self.labelgripper3.setGeometry(30,750,190,50)
+        self.labelgripper3.setFont(QFont("Arial", 25))
+        self.labelgripper3.setStyleSheet("QLabel {color : rgb(150, 150, 150)}")
+#--------------------display Gripper_4-----------------------
+        self.labelgripper4 = QLabel(self)
+        self.labelgripper4.setText("Gripper[4]")
+        self.labelgripper4.setGeometry(30,800,190,50)
+        self.labelgripper4.setFont(QFont("Arial", 25))
+        self.labelgripper4.setStyleSheet("QLabel {color : rgb(150, 150, 150)}")
+
+#----------------------graph------------------------
+
 
 
         self.show()
@@ -279,8 +293,39 @@ class App(QMainWindow):
             painter.setBrush(QBrush(QColor(150, 150, 150), Qt.SolidPattern))
         painter.drawEllipse(370, 400, 100, 100)
 
+#-------------------Grippers----------------------------------------
+        painter.setPen(QPen(QColor(150, 150, 150), 2))
+        painter.setBrush(QBrush(Qt.transparent, Qt.SolidPattern))
+        painter.drawRect(10 , 620, 570, 260) 
 
+        if(GRIPPER1_STATE == "ON"):
+            painter.setBrush(QBrush(QColor(57, 255, 20), Qt.SolidPattern))
+        else:
+            painter.setBrush(QBrush(QColor(150, 150, 150), Qt.SolidPattern))
+        painter.drawEllipse(230, 660, 35, 35)
 
+        if(GRIPPER2_STATE == "ON"):
+            painter.setBrush(QBrush(QColor(57, 255, 20), Qt.SolidPattern))
+        else:
+            painter.setBrush(QBrush(QColor(150, 150, 150), Qt.SolidPattern))
+        painter.drawEllipse(230, 710, 35, 35)
+
+        if(GRIPPER3_STATE == "ON"):
+            painter.setBrush(QBrush(QColor(57, 255, 20), Qt.SolidPattern))
+        else:
+            painter.setBrush(QBrush(QColor(150, 150, 150), Qt.SolidPattern))
+        painter.drawEllipse(230, 760, 35, 35)
+
+        if(GRIPPER4_STATE == "ON"):
+            painter.setBrush(QBrush(QColor(57, 255, 20), Qt.SolidPattern))
+        else:
+            painter.setBrush(QBrush(QColor(150, 150, 150), Qt.SolidPattern))
+        painter.drawEllipse(230, 810, 35, 35)
+
+#----------------------Graph----------------------------------------
+        painter.setPen(QPen(QColor(150, 150, 150), 2))
+        painter.setBrush(QBrush(Qt.transparent, Qt.SolidPattern))
+        painter.drawRect(600, 330, 980, 550)
 
 app = QApplication(sys.argv)
 ex = App()
