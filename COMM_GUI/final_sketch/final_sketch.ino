@@ -22,8 +22,6 @@ Servo TB;
 /*initialising ROV node and publisher*/
 ros::NodeHandle  nh;
 std_msgs::String str_msg;
-const char* bufferr="000000000";
-
 ros::Publisher ROV("/fromROV", &str_msg);
 
 /*initialising global variables and character lists*/
@@ -63,12 +61,9 @@ void messageCb(const std_msgs::String& msg) /*callback function for subscriber*/
       buttonArr[i]=temp;
       buttons_bin=buttons_bin-temp*(10^i);
     }
-    motion(speedsArr);  
-    if(strcmp(str_msg.data,msg.data)){
-    str_msg.data=msg.data;      
+    motion(speedsArr);        
+    str_msg.data=speeds;
     ROV.publish(&str_msg);
-    }
-
   }
   else
   {
@@ -98,10 +93,8 @@ void check_msg(String speedss)
 
 void setup() {
     nh.initNode();
-    str_msg.data=bufferr;
     nh.subscribe(sub);
     nh.advertise(ROV);
-    
     
     pinMode(FR_pin, OUTPUT);
     pinMode(FL_pin, OUTPUT);

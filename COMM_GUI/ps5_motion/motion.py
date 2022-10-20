@@ -42,7 +42,6 @@ class motion():
         
         self.output="#" + self.output + str(buttons)+ "#"
         
-
         return self.output
     def encoder(self):
         self.Chrspeeds=[]
@@ -61,20 +60,19 @@ class motion():
         self.speeds=[x for x in msg]
         #Check if the squence is sent correct 
         #if(len(self.speeds) == '' )
-        if (self.speeds[0]=="#" and self.speeds[8]=="#"):
+        if (self.speeds[0]=="#" and self.speeds[-1]=="#"):
             del self.speeds[0]
-            del self.speeds[-1]
+            self.speeds.pop()
 
             for i in range(len(self.speeds)):
-                if (i==7):
-                    self.speeds[i]=bin(ord(self.speeds[i]))
-                    break
+
                 self.speeds[i] = int(ord(self.speeds[i]))
                 self.speeds[i] = self.speeds[i] * 2
                 self.speeds[i] = self.speeds[i] - 200
 
 
-        print(self.speeds)
+        print(self.speeds[0:6])
+        print(bin(ord(self.speeds[7])-50))
 
 
 
