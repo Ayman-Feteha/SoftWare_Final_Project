@@ -18,10 +18,10 @@ from motion import *
 
 
 #check gripper state
-GRIPPER1_STATE = "ON"
-GRIPPER2_STATE = "OFF"
-GRIPPER3_STATE = "ON"
-GRIPPER4_STATE = "OFF"
+GRIPPER1_STATE = 0
+GRIPPER2_STATE = 0
+GRIPPER3_STATE = 0
+GRIPPER4_STATE = 1
 
 #check lightening state
 LIGHT_STATE  = "ON"
@@ -29,7 +29,7 @@ LIGHT_STATE  = "ON"
 PS5_STATE = "ON"
 
 #thrust speeds
-thrust_FR = 200
+thrust_FR = 10
 thrust_FL = 200
 thrust_TF = 200
 thrust_TB = 200
@@ -61,6 +61,13 @@ class App(QMainWindow):
         self.top = 200
         self.width = 1600
         self.height = 900
+
+        # Setup a timer to trigger the redraw by calling update_plot.
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(100)
+        self.timer.timeout.connect(self.updateEvent)
+        self.timer.timeout.connect(self.update_plot)
+        self.timer.start()
 
         self.initUI()
     
@@ -271,16 +278,35 @@ class App(QMainWindow):
         self.ydata = [random.randint(0, 10) for i in range(n_data)]
         self.ydata1 = [random.randint(0, 10) for i in range(n_data)]
 
-        self.update_plot()
 
         self.show()
+    
+    def updateEvent(self):
+        global thrust_FR,thrust_FL,thrust_TF,thrust_TB,thrust_BR,thrust_BL,GRIPPER1_STATE,GRIPPER2_STATE
+        thrust_FR = thrust_FR +1
+        self.Thrust1.display(thrust_FR)
 
-        # Setup a timer to trigger the redraw by calling update_plot.
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(100)
-        self.timer.timeout.connect(self.update_plot)
-        self.timer.start()
+        thrust_FL = 30
+        self.Thrust2.display(thrust_FL)
 
+        thrust_TF = 150
+        self.Thrust3.display(thrust_TF)
+
+        thrust_TB = 170
+        self.Thrust4.display(thrust_TB)
+
+        thrust_BR = 40
+        self.Thrust5.display(thrust_BR)
+
+        thrust_BL = 10
+        self.Thrust6.display(thrust_BL)
+
+        GRIPPER1_STATE = 1
+        GRIPPER2_STATE = 1
+
+
+        self.update()
+    
     def update_plot(self):
         # Drop off the first y element, append a new one.
         
@@ -295,6 +321,7 @@ class App(QMainWindow):
         self.m.draw()
 
     def paintEvent(self, event):
+
 
         painter = QPainter()
         painter.begin(self)
@@ -350,25 +377,25 @@ class App(QMainWindow):
         painter.setBrush(QBrush(Qt.transparent, Qt.SolidPattern))
         painter.drawRect(10 , 620, 570, 260) 
 
-        if(GRIPPER1_STATE == "ON"):
+        if(GRIPPER1_STATE == 1):
             painter.setBrush(QBrush(QColor(57, 255, 20), Qt.SolidPattern))
         else:
             painter.setBrush(QBrush(QColor(150, 150, 150), Qt.SolidPattern))
         painter.drawEllipse(230, 660, 35, 35)
 
-        if(GRIPPER2_STATE == "ON"):
+        if(GRIPPER2_STATE == 1):
             painter.setBrush(QBrush(QColor(57, 255, 20), Qt.SolidPattern))
         else:
             painter.setBrush(QBrush(QColor(150, 150, 150), Qt.SolidPattern))
         painter.drawEllipse(230, 710, 35, 35)
 
-        if(GRIPPER3_STATE == "ON"):
+        if(GRIPPER3_STATE == 1):
             painter.setBrush(QBrush(QColor(57, 255, 20), Qt.SolidPattern))
         else:
             painter.setBrush(QBrush(QColor(150, 150, 150), Qt.SolidPattern))
         painter.drawEllipse(230, 760, 35, 35)
 
-        if(GRIPPER4_STATE == "ON"):
+        if(GRIPPER4_STATE == 1):
             painter.setBrush(QBrush(QColor(57, 255, 20), Qt.SolidPattern))
         else:
             painter.setBrush(QBrush(QColor(150, 150, 150), Qt.SolidPattern))
