@@ -57,22 +57,22 @@ class motion():
         return self.spd
 
     def decoder(self,msg):
-        self.speeds=[x for x in msg]
+        self.speeds2=[x for x in msg]
         #Check if the squence is sent correct 
         #if(len(self.speeds) == '' )
-        if (self.speeds[0]=="#" and self.speeds[-1]=="#"):
-            del self.speeds[0]
-            self.speeds.pop()
+        if (self.speeds2[0]=="#" and self.speeds2[-1]=="#"):
+            del self.speeds2[0]
+            self.speeds2.pop()
 
             for i in range(len(self.speeds)):
 
-                self.speeds[i] = int(ord(self.speeds[i]))
-                self.speeds[i] = self.speeds[i] * 2
-                self.speeds[i] = self.speeds[i] - 200
+                self.speeds2[i] = int(ord(self.speeds2[i]))
+                self.speeds2[i] = self.speeds2[i] * 2
+                self.speeds2[i] = self.speeds2[i] - 200
 
 
-        print(self.speeds[0:6])
-        print(bin(ord(self.speeds[7])-50))
+        print(self.speeds2[0:6])
+        print(bin(ord(self.speeds2[7])-50))
 
 
 

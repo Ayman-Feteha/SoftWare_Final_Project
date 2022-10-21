@@ -1,116 +1,74 @@
-from ast import Str
-from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QMainWindow ,QLCDNumber,QSizePolicy
-from PyQt5.QtGui import QPainter, QColor, QPen, QFont, QBrush
-from PyQt5.QtCore import Qt, QTimer
+def gui():
+    class MplCanvas(FigureCanvas):
 
-import sys
-import random
-import matplotlib
-matplotlib.use('Qt5Agg')
-#from ps5 import *
-from PyQt5 import QtCore, QtWidgets
+        def __init__(self, parent=None, width=5, height=4, dpi=100):
+            fig = Figure(figsize=(width, height), dpi=dpi)
+            self.axes = fig.add_subplot(111)
+            FigureCanvas.__init__(self, fig)
+            self.setParent(parent)
+            FigureCanvas.updateGeometry(self)
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from matplotlib import pyplot as plt
+    class App(QMainWindow):
 
-
-
-#check gripper state
-GRIPPER1_STATE = "ON"
-GRIPPER2_STATE = "OFF"
-GRIPPER3_STATE = "ON"
-GRIPPER4_STATE = "OFF"
-
-#check lightening state
-LIGHT_STATE  = "ON"
-#check if ps5 connected or not 
-PS5_STATE = "ON"
-
-#thrust speeds
-thrust_1 = 200
-thrust_2 = 200
-thrust_3 = 200
-thrust_4 = 200
-thrust_5 = 150
-thrust_6 = 150
-maxspeed =200
-
-#imu reading 
-pitch = 30
-yaw = 20
-roll = 50
-
-class MplCanvas(FigureCanvas):
-
-    def __init__(self, parent=None, width=5, height=4, dpi=100):
-        fig = Figure(figsize=(width, height), dpi=dpi)
-        self.axes = fig.add_subplot(111)
-        FigureCanvas.__init__(self, fig)
-        self.setParent(parent)
-        FigureCanvas.updateGeometry(self)
-
-class App(QMainWindow):
-
-    def __init__(self, *args, **kwargs):
-        super(App, self).__init__(*args, **kwargs)
+        def __init__(self, *args, **kwargs):
+            super(App, self).__init__(*args, **kwargs)
         
-        self.title = 'ROV'
-        self.left = 200
-        self.top = 200
-        self.width = 1600
-        self.height = 900
+            self.title = 'ROV'
+            self.left = 200
+            self.top = 200
+            self.width = 1600
+            self.height = 900
 
-        self.initUI()
+            self.initUI()
     
-    def initUI(self):
-        self.setWindowTitle(self.title)
-        self.setGeometry(self.left, self.top, self.width, self.height)
+        def initUI(self):
+            self.setWindowTitle(self.title)
+            self.setGeometry(self.left, self.top, self.width, self.height)
         
         #self.setAutoFillBackground(True)
-        self.setStyleSheet("background:rgb(20, 20, 20)")  
+            self.setStyleSheet("background:rgb(20, 20, 20)")  
 
 #----------display Max speed------------------
         
-        self.labelMAXspeed = QLabel(self)
-        self.labelMAXspeed.setText("MAX SPEED : ")
-        self.labelMAXspeed.setGeometry(300 , 250, 260, 50)
-        self.labelMAXspeed.setFont(QFont("Arial", 30))
-        self.labelMAXspeed.setStyleSheet("QLabel {color : cyan}")
+            self.labelMAXspeed = QLabel(self)
+            self.labelMAXspeed.setText("MAX SPEED : ")
+            self.labelMAXspeed.setGeometry(300 , 250, 260, 50)
+            self.labelMAXspeed.setFont(QFont("Arial", 30))
+            self.labelMAXspeed.setStyleSheet("QLabel {color : cyan}")
 
-        self.labelMAXspeed = QLabel(self)
-        self.labelMAXspeed.setText(str(maxspeed))
-        self.labelMAXspeed.setGeometry(570 , 250, 260, 50)
-        self.labelMAXspeed.setFont(QFont("Arial", 30))
-        self.labelMAXspeed.setStyleSheet("QLabel {color : cyan}")
+            self.labelMAXspeed = QLabel(self)
+            self.labelMAXspeed.setText(str(maxspeed))
+            self.labelMAXspeed.setGeometry(570 , 250, 260, 50)
+            self.labelMAXspeed.setFont(QFont("Arial", 30))
+            self.labelMAXspeed.setStyleSheet("QLabel {color : cyan}")
 # ----------display thrust speeds-------------
 
         #THRUST1
-        self.Thrust1 = QLCDNumber(self)
-        self.Thrust1.display(thrust_1)
-        self.Thrust1.setGeometry(60 , 85, 80, 50)
+            self.Thrust1 = QLCDNumber(self)
+            self.Thrust1.display(thrust_1)
+            self.Thrust1.setGeometry(60 , 85, 80, 50)
 
-        self.labelThrustName1 = QLabel(self)
-        self.labelThrustName1.setText("Thrust [1]")
-        self.labelThrustName1.setGeometry(40, 195, 120, 50)
-        self.labelThrustName1.setFont(QFont("Arial", 20))
-        self.labelThrustName1.setStyleSheet("QLabel {color : cyan}")
+            self.labelThrustName1 = QLabel(self)
+            self.labelThrustName1.setText("Thrust [1]")
+            self.labelThrustName1.setGeometry(40, 195, 120, 50)
+            self.labelThrustName1.setFont(QFont("Arial", 20))
+            self.labelThrustName1.setStyleSheet("QLabel {color : cyan}")
 
         #THRUST2
-        self.Thrust2 = QLCDNumber(self)
-        self.Thrust2.display(thrust_2)
-        self.Thrust2.setGeometry(280, 85, 80, 50)
+            self.Thrust2 = QLCDNumber(self)
+            self.Thrust2.display(thrust_2)
+            self.Thrust2.setGeometry(280, 85, 80, 50)
 
-        self.labelThrustName2 = QLabel(self)
-        self.labelThrustName2.setText("Thrust [2]")
-        self.labelThrustName2.setGeometry(270, 195, 120, 50)
-        self.labelThrustName2.setFont(QFont("Arial", 20))
-        self.labelThrustName2.setStyleSheet("QLabel {color : cyan}")
+            self.labelThrustName2 = QLabel(self)
+            self.labelThrustName2.setText("Thrust [2]")
+            self.labelThrustName2.setGeometry(270, 195, 120, 50)
+            self.labelThrustName2.setFont(QFont("Arial", 20))
+            self.labelThrustName2.setStyleSheet("QLabel {color : cyan}")
 
         #THRUST3
-        self.Thrust3 = QLCDNumber(self)
-        self.Thrust3.display(thrust_3)
-        self.Thrust3.setGeometry(500, 85, 80, 50)
+            self.Thrust3 = QLCDNumber(self)
+            self.Thrust3.display(thrust_3)
+            self.Thrust3.setGeometry(500, 85, 80, 50)
         
         self.labelThrustName3 = QLabel(self)
         self.labelThrustName3.setText("Thrust [3]")
@@ -378,6 +336,6 @@ class App(QMainWindow):
         painter.setBrush(QBrush(Qt.transparent, Qt.SolidPattern))
         painter.drawRect(600, 330, 980, 550)
 
-#app = QApplication(sys.argv)
-#ex = App()
-#app.exec_()
+app = QApplication(sys.argv)
+ex = App()
+app.exec_()
