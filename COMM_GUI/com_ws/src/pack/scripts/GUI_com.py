@@ -3,7 +3,10 @@ import threading
 from ps5 import *
 from motion import *
 from GUI_code import *
-
+communication=commu()
+app = QApplication(sys.argv)
+ex = App()
+app.exec_()
 def commuThread():
     communication=commu()
 
