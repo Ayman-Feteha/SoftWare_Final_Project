@@ -42,7 +42,7 @@ class motion():
         
         self.output="#" + self.output + str(buttons)+ "#"
         
-        return self.output
+        #return self.output
     def encoder(self):
         self.Chrspeeds=[]
         for i in range(len(self.speeds)):

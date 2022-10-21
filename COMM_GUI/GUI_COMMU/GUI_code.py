@@ -27,15 +27,15 @@ GRIPPER4_STATE = "OFF"
 LIGHT_STATE  = "ON"
 #check if ps5 connected or not 
 PS5_STATE = "ON"
-motion.decoder()
+
 #thrust speeds
-thrust_FR = motion.speeds[1]
-thrust_FL = motion.speeds[2]
-thrust_TF = motion.speeds[3]
-thrust_TB = motion.speeds[4]
-thrust_BR = motion.speeds[5]
-thrust_BL = motion.speeds[6]
-maxspeed =motion.max_speed
+thrust_FR = 200
+thrust_FL = 200
+thrust_TF = 200
+thrust_TB = 200
+thrust_BR = 150
+thrust_BL = 150
+maxspeed =200
 
 #imu reading 
 pitch = 30
