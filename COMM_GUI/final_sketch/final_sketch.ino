@@ -79,6 +79,10 @@ ros::Subscriber<std_msgs::String> sub("/toROV", messageCb );
 void check_msg(String speedss)
 {
   boolean x=speedss.startsWith("#");
+  if(x==1)
+  {
+    nh.loginfo("x is 1");
+  }
   boolean y=speedss.endsWith("#");
   if ((x)&&(y))
   {
@@ -121,7 +125,7 @@ void setup() {
 
 void loop() {
     nh.spinOnce();
-    //delay(500);
+    delay(0.1);
 }
 
 

@@ -42,7 +42,7 @@ class motion():
         
         self.output="#" + self.output + str(buttons)+ "#"
         
-        #return self.output
+        return self.output
     def encoder(self):
         self.Chrspeeds=[]
         for i in range(len(self.speeds)):
@@ -57,22 +57,27 @@ class motion():
         return self.spd
 
     def decoder(self,msg):
-        self.speeds=[x for x in msg]
+        self.speeds2=[x for x in msg]
         #Check if the squence is sent correct 
         #if(len(self.speeds) == '' )
-        if (self.speeds[0]=="#" and self.speeds[-1]=="#"):
-            del self.speeds[0]
-            self.speeds.pop()
+        if (self.speeds2[0]=="#" and self.speeds2[-1]=="#"):
+            del self.speeds2[0]
+            self.speeds2.pop()
 
-            for i in range(len(self.speeds)):
+        display_arr=[ord(x) for x in msg[1:7]]
+        display_arr=[((x*2)-200)for x in display_arr] #values to be passed to the gui to display speeds of thrusters
+        print(display_arr[0:6])                       #printing in terminal just to check
 
-                self.speeds[i] = int(ord(self.speeds[i]))
-                self.speeds[i] = self.speeds[i] * 2
-                self.speeds[i] = self.speeds[i] - 200
+        #This did not work so we switched to the two lines upove
+            #for i in range(len(self.speeds)):
+
+            #    self.speeds2[i] = int(ord(self.speeds2[i]))
+            #    self.speeds2[i] = self.speeds2[i] * 2
+            #    self.speeds2[i] = self.speeds2[i] - 200
 
 
-        print(self.speeds[0:6])
-        print(bin(ord(self.speeds[7])-50))
+        
+        #print(bin(ord(self.speeds2[7])-50))
 
 
 
