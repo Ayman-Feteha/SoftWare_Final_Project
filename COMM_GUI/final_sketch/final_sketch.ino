@@ -19,59 +19,76 @@ Servo BR;
 Servo TF;
 Servo TB;
 
-
+/*initialising ROV node and publisher*/
 ros::NodeHandle  nh;
+std_msgs::String str_msg;
+ros::Publisher ROV("/fromROV", &str_msg);
+
+/*initialising global variables and character lists*/
 char speeds[10]="";
 char speedsArr[7]={};
-char buttons[]="";
+//char bufferr[10]="";
+unsigned int buttons_bin=0;
+boolean buttonArr[6]={0,0,0,0,0};
 boolean check=false;
-char hash = '#';
 
-void messageCb(const std_msgs::String& msg){
-strcpy(speeds,"000000000");
-  //speeds[0]=msg.data[0]; 
-  //speeds[8]=msg.data[8];
-int n= strlen((const char*)msg.data);
-
-for (int i=0; i<n; i++)
+void messageCb(const std_msgs::String& msg) /*callback function for subscriber*/
 {
-  speeds[i]=msg.data[i];
-}
-check_msg();
-if(check)
-{
-  nh.loginfo("True");
-  for (int i=0;i<=6;i++)
-  {
-    speedsArr[i]=atoi((const char*)speeds[i+1]);
-  }
-  motion(speedsArr);
-}
-else
-{
-  nh.loginfo("False");
-}
-//nh.loginfo(speeds[8]);
-nh.loginfo(msg.data);
-
-
   
+  strcpy(speeds,"000000000");               /*resetting speeds list*/
+  int n= strlen((const char*)msg.data);     /*detecting the number of characters in the recieved msg*/
+
+  for (int i=0; i<n; i++)                   /*copying values from msg to speed*/
+  {
+    speeds[i]=msg.data[i];
+  }
+
+  check_msg((String)msg.data);                              /*calling fn to check on the end and beginning of recieved msg*/
+
+  if(check)                                 /*proceeds if the msg is correctly recieved*/
+  {
+    nh.loginfo("True");                     /*decoding values stored in msg into decimal values*/
+      
+    for (int i=0;i<=6;i++)
+    {
+      speedsArr[i]=((int)speeds[i+1]);
+    }
+    buttons_bin=((int)speeds[7]-50,BIN);       /*converting buttons character into the binary equivalent number*/
+    int temp=0;
+    for(int i=0;i<=5;i++)                   /*passing the value of each button state into nthe buttons array*/
+    {
+      temp=buttons_bin/10;
+      buttonArr[i]=temp;
+      buttons_bin=buttons_bin-temp*(10^i);
+    }
+    motion(speedsArr);        
+    str_msg.data=speeds;
+    ROV.publish(&str_msg);
+  }
+  else
+  {
+    nh.loginfo("False");
+  }
+    
+  nh.loginfo(msg.data);
 }
 
 ros::Subscriber<std_msgs::String> sub("/toROV", messageCb );
-void decode()
-{
-  
-}
 
-void check_msg()
+
+void check_msg(String speedss)
 {
-  boolean x=(speeds[0]==hash);
-  boolean y=(speeds[strlen(speeds)-1]==hash);
-  if ((x )&&(y))
+  boolean x=speedss.startsWith("#");
+  if(x==1)
+  {
+    nh.loginfo("x is 1");
+  }
+  boolean y=speedss.endsWith("#");
+  if ((x)&&(y))
   {
     check=true;
   }
+  
   else
   {
     check=false;
@@ -79,10 +96,9 @@ void check_msg()
 }
 
 void setup() {
-  // put your setup code here, to run once:
     nh.initNode();
     nh.subscribe(sub);
-    
+    nh.advertise(ROV);
     
     pinMode(FR_pin, OUTPUT);
     pinMode(FL_pin, OUTPUT);
@@ -108,11 +124,8 @@ void setup() {
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
     nh.spinOnce();
-    //motion(speedsArr);
-    
-    //delay(500);
+    delay(0.1);
 }
 
 
@@ -161,10 +174,14 @@ int motion(char speedsArr[7])
   //scaling the speeds if they are out of range
 if (scaling!=1)
 {
+
 for (int i = 0 ; i<6 ; i++)
 {
-tspeed[i]=tspeed[i]*scaling;  
+tspeed[i]=tspeed[i]*scaling; 
+
 }
+
+
 
 //assign the speeds to the thrusters
 }

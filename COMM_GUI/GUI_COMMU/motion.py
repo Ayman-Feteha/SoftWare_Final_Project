@@ -5,7 +5,7 @@
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 
-
+display_arr=[0,0,0,0,0,0,0,0,0,0,0]
 
 class motion():
 
@@ -57,22 +57,39 @@ class motion():
         return self.spd
 
     def decoder(self,msg):
+        global display_arr
         self.speeds2=[x for x in msg]
         #Check if the squence is sent correct 
         #if(len(self.speeds) == '' )
         if (self.speeds2[0]=="#" and self.speeds2[-1]=="#"):
-            del self.speeds2[0]
-            self.speeds2.pop()
-
-            for i in range(len(self.speeds)):
-
-                self.speeds2[i] = int(ord(self.speeds2[i]))
-                self.speeds2[i] = self.speeds2[i] * 2
-                self.speeds2[i] = self.speeds2[i] - 200
+            #del self.speeds2[0]
+            #self.speeds2.pop()
 
 
-        print(self.speeds2[0:6])
-        print(bin(ord(self.speeds2[7])-50))
+            speeds_arr=[ord(x) for x in msg[1:7]]
+            speeds_arr=[((x*2)-200)for x in speeds_arr[0:6]] #values to be passed to the gui to display speeds of thrusters
+            #print(speeds_arr)                       #printing in terminal just to check
+
+            states=bin(ord(msg[7])-50)[2:].zfill(5)
+            ls=[int(x) for x in states[0:6]]
+            display_arr=speeds_arr+ls
+            print(display_arr)
+        else:
+            pass
+        return(display_arr) 
+        
+
+
+        #This did not work so we switched to the two lines upove
+            #for i in range(len(self.speeds)):
+
+            #    self.speeds2[i] = int(ord(self.speeds2[i]))
+            #    self.speeds2[i] = self.speeds2[i] * 2
+            #    self.speeds2[i] = self.speeds2[i] - 200
+
+
+        
+        #print(bin(ord(self.speeds2[7])-50))
 
 
 

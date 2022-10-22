@@ -1,5 +1,4 @@
 #! /usr/bin/python3
-from os import stat
 import pygame
 from motion import *
 import sys
@@ -7,9 +6,12 @@ import rospy
 from std_msgs.msg import String
 from sys import getsizeof
 import math
+import time
+                            #creating object from imported motion class
+ROV=motion()
                             #all commented lines of code are for testing purposes
 buffer = [0,0,0,0,0]        #buffer to store old values and compare them to new readings
-buttons_last = "d"          #buffer to store old button readings
+buttons_last =  chr(50)     #buffer to store old button readings
 
 pygame.init()
 
@@ -18,8 +20,8 @@ speed=100                   #maximum speed initial value
 done = False
 
 def ROVcb(data):            #Callback function for msg recieved from ROV
-    ROVmsg=motion.decoder(data.data)
-    rospy.loginfo(ROVmsg)
+    ROVmsg=ROV.decoder(data.data)
+    #rospy.loginfo(ROVmsg)
     
 
 
@@ -31,11 +33,14 @@ class Publisher():          #This class initialises the station publisher node
 
     def send(self,msg):     #function in class to send the required signal to be sent "String Value"
         self.pub.publish(msg)
-        rospy.loginfo(msg)
+        #rospy.loginfo(msg)
         #rospy.Rate(2)
 
     def recieve(self):      #function responsible for recieving data from ROV
-        rospy.Subscriber("/fromROV",String,ROVcb)
+        try:
+            rospy.Subscriber("/fromROV",String,ROVcb)
+        except TypeError:
+            pass
 
 station = Publisher()       #creating object from Publishers class to initialise node
 
@@ -49,13 +54,13 @@ def bin_dec(button_ls):     #this function takes button inputs in a list and ret
     for i in buttons_ls:
         dec=dec+i*temp
         temp*=2
+    dec+=50
         #print (dec)
-    return str(dec)
+    return chr(dec)
                             #the following function ensures that the same reading is not being sent twice
 
-def states(ls,speed = 0,buttons_dec =chr(0)):
-                            #creating object from imported motion class
-    ROV=motion()
+def states(ls,speed = 0,buttons_dec =chr(50)):
+
     global buttons_last
                             #limiting some readings to fix errors caused by joystick
     for i in range(5): 
@@ -67,6 +72,7 @@ def states(ls,speed = 0,buttons_dec =chr(0)):
         for i in range(5): 
             buffer[i] = ls[i]
         buttons_last = buttons_dec
+        
         #print(buffer)
                             #passing readings to motion class to get encoded msg of speed values and buttons
         msg = ROV.motorSpeed(ls,speed,buttons_dec)

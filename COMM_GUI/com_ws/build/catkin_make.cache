@@ -1,2 +1,2 @@
 pack
--DCATKIN_DEVEL_PREFIX=/home/rewan/Downloads/SoftWare_Final_Project/COMM_GUI/com_ws/devel -DCMAKE_INSTALL_PREFIX=/home/rewan/Downloads/SoftWare_Final_Project/COMM_GUI/com_ws/install -G Unix Makefiles
+-DCATKIN_DEVEL_PREFIX=/home/nada/Desktop/Final Project/SoftWare_Final_Project/COMM_GUI/com_ws/devel -DCMAKE_INSTALL_PREFIX=/home/nada/Desktop/Final Project/SoftWare_Final_Project/COMM_GUI/com_ws/install -G Unix Makefiles
