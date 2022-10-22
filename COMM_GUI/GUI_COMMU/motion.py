@@ -67,6 +67,7 @@ class motion():
         display_arr=[ord(x) for x in msg[1:7]]
         display_arr=[((x*2)-200)for x in display_arr] #values to be passed to the gui to display speeds of thrusters
         print(display_arr[0:6])                       #printing in terminal just to check
+        return(display_arr[0:6]) 
 
         #This did not work so we switched to the two lines upove
             #for i in range(len(self.speeds)):
