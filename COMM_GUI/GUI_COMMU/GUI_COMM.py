@@ -23,28 +23,29 @@ from matplotlib.figure import Figure
 from matplotlib import pyplot as plt
 
 from motion import *
-msg=[0,0,0,0,0,0]
+msg=[0,0,0,0,0,0,0,0,0,0,0]
 
 #check gripper state
 GRIPPER1_STATE = 0
 GRIPPER2_STATE = 0
 GRIPPER3_STATE = 0
-GRIPPER4_STATE = 1
+GRIPPER4_STATE = 0
 
 #check lightening state
-LIGHT_STATE  = "ON"
+LIGHT_STATE  = 0
 #check if ps5 connected or not 
 PS5_STATE = "ON"
 
 #thrust speeds
-thrust_FR = 10
-thrust_FL = 200
-thrust_TF = 200
-thrust_TB = 200
-thrust_BR = 150
-thrust_BL = 150
-maxspeed =200
+thrust_FR = 0
+thrust_FL = 0
+thrust_TF = 0
+thrust_TB = 0
+thrust_BR = 0
+thrust_BL = 0
+maxspeed = 100
 
+check_joy="OFF"
 #imu reading 
 pitch = 30
 yaw = 20
@@ -125,15 +126,16 @@ def states(ls,speed = 0,button_ls =[0,0,0,0,0]):
         
         #print(buffer)
                             #passing readings to motion class to get encoded msg of speed values and buttons
-        msg = ROV.motorSpeed(ls,speed,buttons_dec)
+        msgg = ROV.motorSpeed(ls,speed,buttons_dec)
                             #sending msg and recieving response from the ROV arduino
-        station.send(msg)
+        station.send(msgg)
         station.recieve()
         #print (msg)    
         #ROV.decoder()
 
 def main():
     global done
+    global check_joy
     pygame.init()
     clock=pygame.time.Clock()
     pygame.joystick.init()      #initialising joystick
@@ -143,12 +145,13 @@ def main():
             if event.type == pygame.QUIT:
                 done = True
                                 #for testing purposes
-            if event.type == pygame.JOYBUTTONDOWN:     
-                print("Joystick button pressed.")
-            if event.type == pygame.JOYBUTTONUP:
-                print("Joystick button released.")
+            #if event.type == pygame.JOYBUTTONDOWN:     
+            #    print("Joystick button pressed.")
+            #if event.type == pygame.JOYBUTTONUP:
+            #    print("Joystick button released.")
             
             try:                #try/except to detect if anything happens in joystick bluetooth connection with pc
+                check_joy="ON"
                 joystick = pygame.joystick.Joystick(0)
                 joystick.init() #getting axis readings
                 axis_RX = round(joystick.get_axis(3),3)
@@ -157,13 +160,13 @@ def main():
                 axis_LY = round(joystick.get_axis(1),3)
                                 #merging two axis together
                 axis_Forward = round(((joystick.get_axis(5)+1)/-2) + ((joystick.get_axis(2)+1)/2),3)
-                btn_light = joystick.get_button(4)
+                btn_light = joystick.get_button(3)
                 btn_speed = joystick.get_button(5)
                                 #getting buttons readings
                 btn_gribber1 = joystick.get_button(0)
                 btn_gribber2 = joystick.get_button(1)
                 btn_gribber3 = joystick.get_button(2)
-                btn_gribber4 = joystick.get_button(3)
+                btn_gribber4 = joystick.get_button(4)
                 buttons_ls=[btn_light,btn_gribber1,btn_gribber2,btn_gribber3,btn_gribber4]
                 
                                 #passing button readings list to function to get decimal value
@@ -182,6 +185,7 @@ def main():
                                 #detecting errors in joystick connection         
             except pygame.error:
                                 #hinting of the error to user
+                check_joy="OFF"
                 print("Joystick is not connected")
                 z = [0,0,0,0,0]
                                 #sending signal to states to stop ROV completely
@@ -212,7 +216,7 @@ def GUI():
 
             # Setup a timer to trigger the redraw by calling update_plot.
             self.timer = QtCore.QTimer()
-            self.timer.setInterval(100)
+            self.timer.setInterval(0.001)
             self.timer.timeout.connect(self.updateEvent)
             self.timer.timeout.connect(self.update_plot)
             self.timer.start()
@@ -375,13 +379,6 @@ def GUI():
             self.labellight.setGeometry(320,340,250,50)
             self.labellight.setFont(QFont("Arial", 25))
             self.labellight.setStyleSheet("QLabel {color : rgb(150, 150, 150)}")
-
-    #----------------------state label------------------------
-            self.labellight_state = QLabel(self)
-            self.labellight_state.setText(LIGHT_STATE)
-            self.labellight_state.setGeometry(380,520,120,50)
-            self.labellight_state.setFont(QFont("Arial", 40))
-            self.labellight_state.setStyleSheet("QLabel {color : rgb(150, 150, 150)}")
     #----------------------GRIPPERS------------------------
         
     #--------------------display Gripper_1-----------------------
@@ -430,28 +427,35 @@ def GUI():
             self.show()
         
         def updateEvent(self):
-            global thrust_FR,thrust_FL,thrust_TF,thrust_TB,thrust_BR,thrust_BL,GRIPPER1_STATE,GRIPPER2_STATE,msg
+            global thrust_FR,thrust_FL,thrust_TF,thrust_TB,thrust_BR,thrust_BL,LIGHT_STATE,GRIPPER1_STATE,GRIPPER2_STATE,GRIPPER3_STATE,GRIPPER4_STATE,msg
+            global maxspeed,speed,PS5_STATE
             thrust_FR = msg[0]
             self.Thrust1.display(thrust_FR)
 
-            thrust_FL = 30
+            thrust_FL = msg[1]
             self.Thrust2.display(thrust_FL)
 
-            thrust_TF = 150
+            thrust_TF = msg[2]
             self.Thrust3.display(thrust_TF)
 
-            thrust_TB = 170
+            thrust_TB = msg[3]
             self.Thrust4.display(thrust_TB)
 
-            thrust_BR = 40
+            thrust_BR = msg[4]
             self.Thrust5.display(thrust_BR)
 
-            thrust_BL = 10
+            thrust_BL = msg[5]
             self.Thrust6.display(thrust_BL)
 
-            GRIPPER1_STATE = 1
-            GRIPPER2_STATE = 1
-
+            LIGHT_STATE = msg[6]
+            GRIPPER1_STATE = msg[7]
+            GRIPPER2_STATE = msg[8]
+            GRIPPER3_STATE = msg[9]
+            GRIPPER4_STATE = msg[10]
+            maxspeed = speed
+            self.labelMAXspeed.setText(str(maxspeed))
+            PS5_STATE = check_joy
+            self.labelPS5ON.setText(PS5_STATE)
 
             self.update()
         
@@ -514,7 +518,7 @@ def GUI():
             painter.setPen(QPen(QColor(150, 150, 150), 2))
             painter.setBrush(QBrush(Qt.transparent, Qt.SolidPattern))
             painter.drawRect(300 , 330, 280, 260)  
-            if (LIGHT_STATE =="ON"):
+            if (LIGHT_STATE ==1):
                 painter.setBrush(QBrush(QColor(57, 255, 20), Qt.SolidPattern))
             else:
                 painter.setBrush(QBrush(QColor(150, 150, 150), Qt.SolidPattern))
