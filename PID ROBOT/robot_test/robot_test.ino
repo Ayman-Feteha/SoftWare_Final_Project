@@ -1,12 +1,13 @@
 /*
-      --documentation--
+      This code implements a control on a two wheel differential robot the control is mainly implemented on the speed of the robot in rpm and the angle of the robot.
+      The speed control is done by the optical encoder attached to each wheel of the robot. The encoder gives HIGH value each time the ir sensor catches a light
+      through the encoder, this HIGH value that from the sensor is used as a tick to represent a step done by the wheel then by counting the number of ticks done by the
+      wheel and measuring the diameter of the wheel then we can know the displacement the robot has made then we can calculate from it the speed in of the wheel in rpm.
+      The angle of the robot is controlled by a PID controller that takes an input as a yaw angle from the imu(mpu-9255) and calcualtes the current error from the desired setpoint,
+      then the PID output added or minused from the motor speeds depending on the direction of the robot.       
 */
 
-/*
-#include
-*/
 
-/////////////////////////////////
 #include "Wire.h"
 // I2Cdev and MPU9250 must be installed as libraries, or else the .cpp/.h files
 // for both classes must be in the include path of your project
@@ -72,49 +73,61 @@ unsigned long print_ms = 1000; //print every "print_ms" milliseconds
 static float q[4] = {1.0, 0.0, 0.0, 0.0};
 static float yaw, pitch, roll; //Euler angle output
 
-/////////////////////////////////////////////////////////
 
-//pins decleration
-// Motor A connections
-int enA = 9;
-int in1 = 6;
-int in2 = 7;
+
+// ################### MOTOR DRIVER PINS DECLARATION #####################
+// Right Motor connections
+int enR = 9; // pwm pin 
+int in1 = 6; // direction pin 1
+int in2 = 7; // direction pin 2
 int enc2 = 3; //the encoder connected with wheel of motor A
-// Motor B connections
-int enB= 10;
-int in3= 4;
-int in4= 5;
+// Left Motor connections
+int enL= 10; // pwm pin 
+int in3= 4;  // direction pin 3
+int in4= 5;  // direction pin 4
 int enc1 = 2; //the encoder connected with wheel of motor B
 
-// Global Variables decleration
-int N_tics1,N_tics2;  //the number of tics counted from encoder 1 and encoder 2
-int diff; //the difference between the number of tics counted from encoder1 and encoder 2
+
+
+// ################# WHEEL  GLOBAL VARIABLES DECLARATION ####################
+int N_tics1_curr, N_tics2_curr;  //the number of tics counted from encoder 1 and encoder 2
+int diff1 ,diff2; //the difference between the number of tics counted from encoder1 and encoder 2
 int state,tics1,tics2;  //the state given from serial communication to control the robot motion, tics1 & tics2 declare the state of encoder (1 or 0)
 
 
 
-// ########### PID VARIABLES#############
-int setpoint = 80;
-float error = 0;
-float prev_error = 0;
-float kp = 1.5;
-float ki = 0.33;
-float kd = 1.5;
-float proportional = 0; 
-float integral = 0;
-float derivative = 0;
-float p_term = 0;
+
+// ############### PID VARIABLES #############
+int g_yaw = 0;          // The current yaw angle from the imu   
+int setpoint = 0;
+float error = 0;        // current error
+float prev_error = 0;   // previous error
+float kp = 1.7;
+float ki = 0.3;
+float kd = 1.0;
+float proportional = 0; // proportional error 
+float integral = 0;     // integral error
+float derivative = 0;   // derivative error
+float p_term = 0; 
 float i_term = 0;
 float d_term = 0;
-int i_max = 70;
-int i_min = -70;
-float out_max = 150;
-float out_min = -150;
-float pid_out = 0;
-float prevT = 0;
-float dt = 0;
+int i_max = 30;         // I term max limit
+int i_min = -30;        // I term min limit
+//float out_max = 50;     // output max limit
+//float out_min = -50;    // output min limit
+float pid_out = 0;      // PID output
+long prevT = 0;        
+float dt = 0;           // difference in time
 
 
+
+// ################ SPEED CONTROL VARIABLES #################
+int rpm = 150; // rpm speed  
+
+int pwm_r = round((100 * rpm) / 345.02);  // pwm value applied on the right motor
+int pwm_l = round((100 * rpm) / 310);     // pwm value applied on the left motor
+float out_max = pwm_r*0.5;     // output max limit
+float out_min = -pwm_r*0.5;    // output min limit
 
 
 
@@ -127,14 +140,16 @@ void setup() {
 
   while(!Serial); //wait for connection
 
-  // initialize device
+  // initialize imu device
   accelgyro.initialize();
   // verify connection
   Serial.println(accelgyro.testConnection() ? "MPU9250 OK" : "MPU9250 ??");
     
   // Set all the motor control pins to outputs
-  pinMode(enA, OUTPUT);
-  pinMode(enB, OUTPUT);
+  pinMode(enR, OUTPUT);
+  pinMode(enL, OUTPUT);
+  
+  // setting driver direction pins
   for (int i=4;i<8;i++){
     pinMode(i,OUTPUT);
     }
@@ -142,21 +157,24 @@ void setup() {
   pinMode(enc1, INPUT);
   pinMode(enc2, INPUT);
   
-  // Turn off motors - Initial state
-  for (int i=4;i<8;i++){
-    digitalWrite(i,LOW);
-    }
   
-  // attach encoders to interrupt pins so that the N_tics will be increased as soon as the encoder reads (1) not if it reads (1) during certain time in the loop
+  // attaching interrupt pins to the encoder to count each time the encoder gives HIGH
   attachInterrupt(digitalPinToInterrupt(enc1), Inc_tics1 , RISING);
-  attachInterrupt(digitalPinToInterrupt(enc2), Inc_tics1 , RISING);
+  attachInterrupt(digitalPinToInterrupt(enc2), Inc_tics2 , RISING);
 
   delay(3000);
-  /*for(int i = 0 ; i<100 ; i++)
+  
+  // This loop takes imu readings first before initializing a setpoint because first readings are not accurate
+  for(int i = 0 ; i<100 ; i++)
   {
-    setpoint = angles_calc();
+    
+    setpoint = angles_calc(); // function that returnes yaw angle from the imu
+    if(setpoint > 180)
+    {
+      setpoint -= 360; 
+    }
     Serial.println(setpoint);  
-  }*/
+  }
   
   Serial.print("Setpoint :");
   Serial.println(setpoint);
@@ -165,51 +183,66 @@ void setup() {
 
 void loop() {
     
-    float returned_out;
-    long currT = micros();
-    dt = ((float) (currT-prevT))/1.0e-6;
-    prevT = currT;    
    
-    
-    
-    g_yaw = angles_calc();
+    float returned_out;  // This variable saves the output returnd from the PID  function
+    long currT = micros(); // saving the current time 
+    dt = (currT-prevT)/1.0e-6; // calculating the difference time 
+    prevT = currT;
+
+    g_yaw = angles_calc();  // Taking the current yaw angle from the imu 
     Serial.print("yaw : ");
     Serial.println(g_yaw);
-    returned_out = pid(g_yaw, dt);
+    returned_out = pid(g_yaw, dt); 
+
+     
+
+       
     
     
-    
-    
-    
-    if(returned_out > 0)
+    /* 
+     * checking if the robot is moved to the right then the opposing movement to correct the error  
+     * will be to the left by speeding up the right wheel and decreasing the left wheel speed
+     */ 
+    if(returned_out >= 0)
+    {
+      /*
+       * The direction of the wheel is set to move forward
+       */
+      digitalWrite(in1, LOW);
+      digitalWrite(in2, HIGH);
+      digitalWrite(in3, HIGH);
+      digitalWrite(in4, LOW);
+      analogWrite(enR, pwm_r + abs(returned_out)); // increasing right wheel speed
+      analogWrite(enL, pwm_l - abs(returned_out)); // decreasing left wheel speed   
+    }
+
+    /* 
+     * checking if the robot is moved to the left then the opposing movement to correct the error  
+     * will be to the right by speeding up the left wheel and decreasing the right wheel speed
+     */ 
+    else if(returned_out < 0)
     {
       digitalWrite(in1, LOW);
       digitalWrite(in2, HIGH);
-      digitalWrite(in3, LOW);
-      digitalWrite(in4, HIGH);
-      analogWrite(enA, returned_out); 
-      analogWrite(enB, returned_out);     
-    }
-    else if(returned_out < 0)
-    {
-      digitalWrite(in1, HIGH);
-      digitalWrite(in2, LOW);
       digitalWrite(in3, HIGH);
       digitalWrite(in4, LOW);
       
-      returned_out = -returned_out;
-      analogWrite(enA, returned_out); 
-      analogWrite(enB, returned_out);
+      analogWrite(enR, pwm_r - abs(returned_out)); // decreasing right wheel speed
+      analogWrite(enL, pwm_l + abs(returned_out)); // increasing left wheel speed
     }
-    else
+
+    /*
+     * This else is left here just in case if we want to let the robot operate at steady position  
+     */
+    /*else
     {
       digitalWrite(in1, HIGH);
       digitalWrite(in2, LOW);
       digitalWrite(in3, HIGH);
       digitalWrite(in4, LOW);
-      analogWrite(enA, 0); 
-      analogWrite(enB, 0);
-    }
+      analogWrite(enR, 0); 
+      analogWrite(enL, 0);
+    }*/
    
 }
 
@@ -223,17 +256,20 @@ float pid(int yaw, float deltat){
   int inv = 0;
   int normal = 0;
   
-  
+  /*
+   * if the yaw angle exceeds 180 we turn the angle to be -180 and decays as the yaw increases  
+   * then we check the shortest path to let the robot turn itself based on it  
+   */
   if(yaw > 180)
   {
-    yaw_l = yaw;
-    yaw_r = yaw - 360;
-    error1 = setpoint - yaw_r;
+    yaw_l = yaw; // saving the normal yaw angle 
+    yaw_r = yaw - 360;  // saving the new orientation of the yaw angle
+    error1 = setpoint - yaw_r; 
     error2 = setpoint - yaw_l;
-    if (abs(error1) <= abs(error2))
+    if (abs(error1) <= abs(error2)) // checking which error is the smallest
     {
-      error = error1;
-      inv = 1;
+      error = error1; 
+      inv = 1; // a flag to indicate that the robot will turn in the opposote direction of the correction
     }
     else 
     {
@@ -243,42 +279,32 @@ float pid(int yaw, float deltat){
   }
   else
   {
-    error = setpoint - yaw;
+    error = setpoint - yaw; // if angle is less than 180 then the error is measured normally
   }
-  
-      
-      
-  ///Serial.print("edited yaw : ");
-  //Serial.println(yaw)
-  
  
   
   
-  /*if(error > 180)
-  {
-    error -= 360;
+  
+  integral = integral + (error) * dt;  // calculating the integral error
+
+  /*
+   * limiting the integral error
+   */
+  if(integral > i_max)
+  { 
+    integral = i_max;
   }
-  else if(error < -180)
+  else if(integral < i_min)
   {
-    error += 360;
-  }*/
-  
-  Serial.print("error : ");
-  Serial.println(error);
-  
-  integral = integral + (error) * dt;
+    integral = i_min;
+  }
 
- if(integral > i_max)
- {
- integral = i_max;
- }
- else if(integral < i_min)
- {
-  integral = i_min;
- }
+  derivative = (error - prev_error) / dt; // calculating the derivative error
 
-  derivative = (error - prev_error) / dt;
 
+  /*
+   * calculating each term of the PID
+   */
   p_term = kp * error;
 
   i_term = ki * integral;
@@ -290,28 +316,28 @@ float pid(int yaw, float deltat){
   pid_out = p_term + i_term + d_term;
 
  
- // Limitation
+ // Limiting the PID output
 
- if(pid_out > out_max)
- {
-  pid_out = out_max;
- }
- else if(pid_out < out_min)
- {
-  pid_out = out_min;
- }
+  if(pid_out > out_max)
+  {
+    pid_out = out_max;
+  }
+  else if(pid_out < out_min)
+  {
+    pid_out = out_min;
+  }
 
- if(inv == 1)
- {
-  pid_out = -pid_out;
- }
+  if(inv == 1) // checking the flag
+  {
+    pid_out = -pid_out;
+  }
  
 
 
  
- Serial.print("PID : ");
- Serial.println(pid_out);
- return pid_out; 
+  Serial.print("PID : ");
+  Serial.println(pid_out);
+  return pid_out; 
 }
 
 
@@ -364,9 +390,6 @@ MahonyQuaternionUpdate(-Axyz[0], Axyz[1], Axyz[2], Gxyz[0], -Gxyz[1], -Gxyz[2],
     //Serial.print(", ");
     //Serial.println(roll, 0);
   }
-  //if (yaw > 180){
-    //yaw -= 360;
-  //}
   return yaw;
 }
 
@@ -376,24 +399,24 @@ MahonyQuaternionUpdate(-Axyz[0], Axyz[1], Axyz[2], Gxyz[0], -Gxyz[1], -Gxyz[2],
 
 //Function of interrupt to increase the tics number of encoder of motor B
 void Inc_tics1(){
-  N_tics1+=1;
+  N_tics1_curr+=1;
   }
 
 //Function of interrupt to increase the tics number of encoder of motor A
 void Inc_tics2(){
-  N_tics2+=1;
+  N_tics2_curr+=1;
   }
   
 //Function to limit the tics number of encoders to avoid exceeding the storage limit
-void limit_counter(){
-  N_tics1-=1000;
-  N_tics2-=1000;
-  }
+//void limit_counter(){
+  //N_tics1-=1000;
+  //N_tics2-=1000;
+  //}/
 
 //Function to reset the tics number of encoders if the pilot stops the robot 
-void reset_counter(){
-  N_tics1=N_tics2=0;
-  }
+//void reset_counter(){
+  //N_tics1=N_tics2=0;
+  //}
 
 
 
