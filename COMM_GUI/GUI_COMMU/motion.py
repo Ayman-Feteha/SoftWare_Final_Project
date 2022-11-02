@@ -19,21 +19,30 @@ class motion():
         self.up = axis[4]
         self.max_speed = max_speed
 
-        self.FR = (self.forward - self.rotate + self.slide) * self.max_speed
-        self.FL = (-self.forward - self.rotate + self.slide) * self.max_speed
-        self.TF = (self.pitch - self.up) * self.max_speed
-        self.TB = (self.pitch + self.up) * self.max_speed
-        self.BR = (-self.forward + self.rotate + self.slide) * self.max_speed
-        self.BL = (self.forward + self.rotate + self.slide) * self.max_speed
+        #self.FR = (self.forward - self.rotate + self.slide) * self.max_speed
+        #self.FL = (-self.forward - self.rotate + self.slide) * self.max_speed
+        #self.TF = (self.pitch - self.up) * self.max_speed
+        #self.TB = (self.pitch + self.up) * self.max_speed
+        #self.BR = (-self.forward + self.rotate + self.slide) * self.max_speed
+        #self.BL = (self.forward + self.rotate + self.slide) * self.max_speed
 
-        self.speeds=[self.FR,self.FL,self.TF,self.TB,self.BR,self.BL]
+        self.BFR= (-self.forward-self.rotate-self.slide-self.pitch+self.up)*max_speed
+        self.BFL= (self.forward-self.rotate-self.slide+self.pitch-self.up)*max_speed
+        self.BBR= (self.forward+self.rotate-self.slide+self.pitch+self.up)*max_speed
+        self.BBL= (-self.forward+self.rotate-self.slide-self.pitch-self.up)*max_speed
+        self.TFR= (self.forward+self.rotate+self.slide-self.pitch-self.up)*max_speed
+        self.TFL= (-self.forward+self.rotate+self.slide+self.pitch-self.up)*max_speed
+        self.TBR= (-self.forward-self.rotate+self.slide+self.pitch+self.up)*max_speed
+        self.TBL= (-self.forward+self.rotate-self.slide+self.pitch+self.up)*max_speed
+
+        self.speeds=[self.BFR,self.BFL,self.BBR,self.BBL,self.TFR,self.TFL,self.TBR,self.TBL]
         
 
         x=[abs(max(self.speeds)),abs(min(self.speeds))]
         if(max(x)>self.max_speed):
             scale = self.max_speed / max(x)
             for i in range(len(self.speeds)):
-               self.speeds[i]=round(self.speeds[i]*scale)
+                self.speeds[i]=round(self.speeds[i]*scale)
         else:
             for i in range(len(self.speeds)):
                 self.speeds[i]=round(self.speeds[i])
